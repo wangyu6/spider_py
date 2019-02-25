@@ -2,12 +2,15 @@ import urllib.request
 import re
 from urllib.error import URLError,HTTPError,ContentTooShortError
 
-def download(url, user_agent='wsap', num_retries = 2, charset = 'utf-8'):
+def download(url, user_agent='wsap', num_retries = 2, charset = 'utf-8',proxy = None):
 
 	print('Downloading:',url)
 	request = urllib.request.Request(url)
 	request.add_header('user_agent',user_agent)
 	try:
+		if proxy:
+			proxy_support = urllib.request.Proxy.Handler({'http':proxy})
+			opener = urllib.request.buildopener(opener)
 		resp = urllib.request.urlopen(request)
 		cs = resp.headers.get_content_charset()
 		if not cs:

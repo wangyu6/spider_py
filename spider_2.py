@@ -14,4 +14,4 @@ def crawl_site(url,maxerrors=5):
 				#success can scrape the result
 
 
-crawl_site('http://example.python-scraping.com/view/-')
+# crawl_site('http://example.python-scraping.com/view/-')

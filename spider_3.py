@@ -1,35 +1,42 @@
 import re
 from urllib.parse import urljoin
-from spider_1 import *
+from urllib import robotparser
+from download  import *
 
-def link_crawer(start_url, link_regex):
+def link_crawer(start_url, link_regex,robots_url = None,user_agent = "wawp"):
 	
 
 	"""
 	crawl from the given start url following links matched by 
 	link_regex
 	"""
-	# abs_link = start_url
+	
 	crawl_queue = [start_url]
 	seen = set(crawl_queue)
 	
+	if not robots_url:
+		robots_url='{}/robots.txt'.format(start_url)
+	rp = get_robots_parser(robots_url)
 	while crawl_queue:
 		url = crawl_queue.pop()
-		html = download(url)
-		if not html:
-			continue
+		#check url passes robots.txt restrations
 
+		if rp.can_fetch(user_agent,url):
+			html = download(url)
+			if not html:
+				continue
 		# fliter for links matching our regular expression
 		
-		for link in get_links(html):
-			# print(link)
-			if re.match(link_regex, link):
-				abs_link = urljoin(start_url,link)
-				print (abs_link)
-			# crawl_queue.append(abs_link)
-				if abs_link not in seen:
-					seen.add(abs_link)
-					crawl_queue.append(abs_link)
+			for link in get_links(html):
+				
+				if re.match(link_regex, link):
+					abs_link = urljoin(start_url,link)
+					
+					if abs_link not in seen:
+						seen.add(abs_link)
+						crawl_queue.append(abs_link)
+		else:
+			print ('blocked by robots.txt',url)
 
 
 
@@ -45,7 +52,7 @@ def get_links(html):
 
 def get_robots_parser(robots_url):
 	"return the robots parser object using the robots_url"
-	rp = robotsparser.RobotsFileParser()
+	rp = robotparser.RobotFileParser()
 	rp.set_url(robots_url)
 	rp.read()
 	return rp
