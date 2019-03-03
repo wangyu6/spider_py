@@ -1,9 +1,11 @@
+
+
 import re
 from urllib.parse import urljoin
 from urllib import robotparser
-from download  import *
+from spider_1 import *
 
-def link_crawer(start_url, link_regex,robots_url = None,user_agent = "wawp"):
+def link_crawer(start_url, link_regex,robots_url = None,user_agent = "wawp",max_depth=4):
 	
 
 	"""
@@ -12,8 +14,8 @@ def link_crawer(start_url, link_regex,robots_url = None,user_agent = "wawp"):
 	"""
 	
 	crawl_queue = [start_url]
-	seen = set(crawl_queue)
 	
+	seen = {}
 	if not robots_url:
 		robots_url='{}/robots.txt'.format(start_url)
 	rp = get_robots_parser(robots_url)
@@ -22,19 +24,21 @@ def link_crawer(start_url, link_regex,robots_url = None,user_agent = "wawp"):
 		#check url passes robots.txt restrations
 
 		if rp.can_fetch(user_agent,url):
-			html = download(url)
-			if not html:
+			depth = seen.get(url,0)
+			if depth == max_depth:
+				print ('SKIPing %s due to its depth' %url)
 				continue
+				html = download(url)
+				if not html:
+					continue
 		# fliter for links matching our regular expression
 		
-			for link in get_links(html):
-				
-				if re.match(link_regex, link):
-					abs_link = urljoin(start_url,link)
-					
-					if abs_link not in seen:
-						seen.add(abs_link)
-						crawl_queue.append(abs_link)
+				for link in get_links(html):
+					if re.match(link_regex, link):
+						abs_link = urljoin(start_url,link)
+						if abs_link not in seen:
+							seen[abs_link] = depth + 1
+							crawl_queue.append(abs_link)
 		else:
 			print ('blocked by robots.txt',url)
 
@@ -59,4 +63,4 @@ def get_robots_parser(robots_url):
 
 
 link_crawer('http://example.python-scraping.com', '/(places|view)/')
-# print(link_crawer('http://example.python-scraping.com', '/(index|view)/'))
+print(link_crawer('http://example.python-scraping.com', '/(index|view)/'))

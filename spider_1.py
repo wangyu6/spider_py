@@ -1,3 +1,4 @@
+#常规的下载函数 无requests
 import urllib.request
 import re
 from urllib.error import URLError,HTTPError,ContentTooShortError
@@ -21,18 +22,18 @@ def download(url, user_agent='wsap', num_retries = 2, charset = 'utf-8',proxy = 
 		html = None
 		if num_retries > 0:
 			if hasattr(e, 'code') and 500 <= e.code < 600:
-			#ater will try again if number returned 5xx
+			#之后会重新尝试50x类错误
 				return download(url, num_retries - 1)
 	return html
 def crawl_sitemap(url):
-		#download the sitemap file
+		#下载网站地图
 	sitemap = download(url)
-		#extract the sitemap links
+		#抽取网页中的链接
 	links = re.findall('<loc>(.*?)</loc>', sitemap)
 	for link in links:
 		html = download(link)
 		#scrape html here
 		#...
 
-# print(download('http://example.python-scraping.com'))
+# print(download('http://example.python-scraping.com/sitemap.xml'))
 # print(crawl_sitemap('http://example.python-scraping.com/sitemap.xml'))
